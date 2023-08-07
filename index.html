@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang=en>
+	<title>HALT Note</title>
+
+	<style>
+		body{
+			background:#fbfbfb;
+			color:#333;
+			margin:0 auto;
+			width:100%
+		}
+		textarea{
+			background:#fbfbfb;
+			border:0;
+			color:#333;
+			font-family:hack;
+			font-size:1rem;
+			height:98%;
+			line-height:1.4;
+			margin:0 auto;
+			outline:0;
+			padding:4rem;
+			width:100%
+		}
+	</style>
+
+	<script>
+		function l(){
+			document.getElementById("T").value = decodeURIComponent(window.location.hash.substring(1));
+		}
+		function s(){
+			window.history.pushState("","","#"+escape(document.getElementById("T").value))
+		}
+	</script>
+
+	<body onLoad="l();">
+		<textarea contenteditable id=T spellcheck=false placeholder=Loading... autofocus onKeyUp="s();"></textarea>
+	</body>
+</html>
