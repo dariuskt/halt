@@ -29,10 +29,15 @@
 	<script>
 		function updateTitle(){
 			let title = document.getElementById("T").value.split("\n")[0].split('#')[1];
-			if (typeof(title) != undefined) document.title = title;
+			if (typeof(title) != undefined) {
+				document.title = title;
+			}
 		}
 		function l(){
 			document.getElementById("T").value = decodeURIComponent(window.location.hash.substring(1));
+			if (document.getElementById("T").value.length == 0) {
+				document.getElementById("T").value = "#HALT Note\n";
+			}
 			updateTitle();
 		}
 		function s(){
