@@ -27,28 +27,65 @@
 	</style>
 
 	<script>
-		function updateTitle(){
-			let title = document.getElementById("T").value.split("\n")[0].split('#')[1];
+		async function compress(string) {
+			const byteArray = new TextEncoder().encode(string);
+			const cs = new CompressionStream('deflate');
+			const writer = cs.writable.getWriter();
+			writer.write(byteArray);
+			writer.close();
+			buffer = await new Response(cs.readable).arrayBuffer();
+			data = new Uint8Array(buffer);
+			const base64url = await new Promise((r) => {
+				const reader = new FileReader();
+				reader.onload = () => r(reader.result);
+				reader.readAsDataURL(new Blob([data]));
+			});
+			return base64url.substring(base64url.indexOf(',')+1);
+		}
+		async function decompress(base64data) {
+			const byteArray = await (await fetch("data:application/octet;base64," + base64data)).arrayBuffer();
+			const cs = new DecompressionStream('deflate');
+			const writer = cs.writable.getWriter();
+			writer.write(byteArray);
+			writer.close();
+			return new Response(cs.readable).arrayBuffer().then(function (arrayBuffer) {
+				return new TextDecoder().decode(arrayBuffer);
+			});
+		}
+		function updateTitle() {
+			const title = document.getElementById("T").value.split("\n")[0].split('#')[1];
 			if (title) {
 				document.title = title;
 			} else {
 				document.title = "Note";
 			}
 		}
-		function l(){
-			document.getElementById("T").value = decodeURIComponent(window.location.hash.substring(1));
+		async function load() {
+			const url = window.location.hash.substring(1);
+			try {
+				// load deflated note
+				document.getElementById("T").value = await decompress(url);
+			} catch {
+				// fall back to urlencoded note
+				// making sure old notes get converted automatically
+				document.getElementById("T").value = decodeURIComponent(url);
+			}
+
+			// assume empty
 			if (document.getElementById("T").value.length == 0) {
 				document.getElementById("T").value = "#Note\n";
 			}
 			updateTitle();
 		}
-		function s(){
-			window.history.pushState("","","#"+escape(document.getElementById("T").value))
+		async function save() {
+			const msg = document.getElementById("T").value;
+			const pack = await compress(msg);
+			window.history.pushState("","","#"+pack);
 			updateTitle();
 		}
 	</script>
 
-	<body onLoad="l();">
-		<textarea contenteditable id=T spellcheck=false placeholder=Loading... autofocus onKeyUp="s();"></textarea>
+	<body onLoad="load();">
+		<textarea contenteditable id=T spellcheck=false placeholder=Loading... autofocus onKeyUp="save();"></textarea>
 	</body>
 </html>
