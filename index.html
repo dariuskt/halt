@@ -27,11 +27,17 @@
 	</style>
 
 	<script>
+		function updateTitle(){
+			let title = document.getElementById("T").value.split("\n")[0].split('#')[1];
+			if (typeof(title) != undefined) document.title = title;
+		}
 		function l(){
 			document.getElementById("T").value = decodeURIComponent(window.location.hash.substring(1));
+			updateTitle();
 		}
 		function s(){
 			window.history.pushState("","","#"+escape(document.getElementById("T").value))
+			updateTitle();
 		}
 	</script>
 
